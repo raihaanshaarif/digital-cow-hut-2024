@@ -12,5 +12,8 @@ export type IUser = {
   budget: number;
   income: number;
 };
+export type IAcademicFacultyFilters = {
+  searchTerm?: string;
+};
 
 export type UserModel = Model<IUser, Record<string, unknown>>;
