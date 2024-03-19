@@ -10,13 +10,13 @@ router.post(
   validateRequest(CowValidation.createCowZodSchema),
   CowController.createCow,
 );
-// router.get('/:id', CowController.getSingleCow);
-// router.patch(
-//   '/:id',
-//   validateRequest(CowValidation.updateCowZodSchema),
-//   CowController.updateCow,
-// );
-// router.delete('/:id', CowController.deleteCow);
-// router.get('/', CowController.getAllCow);
+router.get('/:id', CowController.getSingleCow);
+router.patch(
+  '/:id',
+  validateRequest(CowValidation.updateCowZodSchema),
+  CowController.updateCow,
+);
+router.get('/', CowController.getAllCow);
+router.delete('/:id', CowController.deleteCow);
 
 export const CowRoutes = router;

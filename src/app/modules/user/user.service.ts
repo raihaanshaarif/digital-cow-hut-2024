@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import User from './user.model';
-import { IAcademicFacultyFilters, IUser } from './user.interface';
+import { IUser, IUserFilters } from './user.interface';
 import { userSearchableFields } from './user.constant';
 import { SortOrder } from 'mongoose';
 import { paginationHelpers } from '../../../helpers/paginationHelpers';
@@ -18,7 +18,7 @@ const createUser = async (data: IUser): Promise<IUser> => {
 };
 
 const getAllUsers = async (
-  filters: IAcademicFacultyFilters,
+  filters: IUserFilters,
   paginationOptions: IPaginationOptions,
 ): Promise<IGenericResponse<IUser[]>> => {
   const { searchTerm, ...filtersData } = filters;

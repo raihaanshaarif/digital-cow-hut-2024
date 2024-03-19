@@ -12,7 +12,7 @@ export type IUser = {
   budget: number;
   income: number;
 };
-export type IAcademicFacultyFilters = {
+export type IUserFilters = {
   searchTerm?: string;
 };
 
