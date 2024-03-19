@@ -1,25 +1,30 @@
 {
-  "keep": {
-    "days": true,
-    "amount": 14
-  },
-  "auditLog": "G:\\@Phero 2023\\digital-cow-hut-backend\\logs\\winston\\sueccess\\.75d82ef9d56dab59d05207f4e2ea7bc2552d5e7f-audit.json",
-  "files": [
-    {
-      "date": 1710848687600,
-      "name": "G:\\@Phero 2023\\digital-cow-hut-backend\\logs\\winston\\sueccess\\2024-19-03-17-success.log",
-      "hash": "3d1d47822a69e535248b559a8e4bdee745bf2f4517ebb78268c654b0407dc5db"
+    "keep": {
+        "days": true,
+        "amount": 14
     },
-    {
-      "date": 1710850080356,
-      "name": "G:\\@Phero 2023\\digital-cow-hut-backend\\logs\\winston\\sueccess\\2024-19-03-18-success.log",
-      "hash": "bdf779d7f285ca61c77e59f01a93f210edda3e766cb9d47b758e176cfc28c871"
-    },
-    {
-      "date": 1710853277957,
-      "name": "G:\\@Phero 2023\\digital-cow-hut-backend\\logs\\winston\\sueccess\\2024-19-03-19-success.log",
-      "hash": "410ce701a3d15797417418281873e40d90fd35e6fd15ea88df420c4d1a1c1f4b"
-    }
-  ],
-  "hashType": "sha256"
+    "auditLog": "G:\\@Phero 2023\\digital-cow-hut-backend\\logs\\winston\\sueccess\\.75d82ef9d56dab59d05207f4e2ea7bc2552d5e7f-audit.json",
+    "files": [
+        {
+            "date": 1710848687600,
+            "name": "G:\\@Phero 2023\\digital-cow-hut-backend\\logs\\winston\\sueccess\\2024-19-03-17-success.log",
+            "hash": "3d1d47822a69e535248b559a8e4bdee745bf2f4517ebb78268c654b0407dc5db"
+        },
+        {
+            "date": 1710850080356,
+            "name": "G:\\@Phero 2023\\digital-cow-hut-backend\\logs\\winston\\sueccess\\2024-19-03-18-success.log",
+            "hash": "bdf779d7f285ca61c77e59f01a93f210edda3e766cb9d47b758e176cfc28c871"
+        },
+        {
+            "date": 1710853277957,
+            "name": "G:\\@Phero 2023\\digital-cow-hut-backend\\logs\\winston\\sueccess\\2024-19-03-19-success.log",
+            "hash": "410ce701a3d15797417418281873e40d90fd35e6fd15ea88df420c4d1a1c1f4b"
+        },
+        {
+            "date": 1710857030814,
+            "name": "G:\\@Phero 2023\\digital-cow-hut-backend\\logs\\winston\\sueccess\\2024-19-03-20-success.log",
+            "hash": "d961f838a44576e5903a90aac45eb0915dbd3df92f4660c46a1125051b6285fd"
+        }
+    ],
+    "hashType": "sha256"
 }

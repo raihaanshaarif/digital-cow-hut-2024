@@ -1,25 +1,30 @@
 {
-  "keep": {
-    "days": true,
-    "amount": 14
-  },
-  "auditLog": "G:\\@Phero 2023\\digital-cow-hut-backend\\logs\\winston\\errors\\.9e5f44034126d442496196a42ac61f21d96591bc-audit.json",
-  "files": [
-    {
-      "date": 1710848687651,
-      "name": "G:\\@Phero 2023\\digital-cow-hut-backend\\logs\\winston\\errors\\2024-19-03-17-error.log",
-      "hash": "0e0f79912a1b2b9048ecb4bef05c5e0374b09659be4aa30711fe1303c3199721"
+    "keep": {
+        "days": true,
+        "amount": 14
     },
-    {
-      "date": 1710850080364,
-      "name": "G:\\@Phero 2023\\digital-cow-hut-backend\\logs\\winston\\errors\\2024-19-03-18-error.log",
-      "hash": "01128895db45318397b0da03d6dc4f967339cd76405fa6b00ec3f3a193504a00"
-    },
-    {
-      "date": 1710853277969,
-      "name": "G:\\@Phero 2023\\digital-cow-hut-backend\\logs\\winston\\errors\\2024-19-03-19-error.log",
-      "hash": "220665fe6c4419cf887b8f04b1486d64576a8d67387222bf351fa45c9c11af77"
-    }
-  ],
-  "hashType": "sha256"
+    "auditLog": "G:\\@Phero 2023\\digital-cow-hut-backend\\logs\\winston\\errors\\.9e5f44034126d442496196a42ac61f21d96591bc-audit.json",
+    "files": [
+        {
+            "date": 1710848687651,
+            "name": "G:\\@Phero 2023\\digital-cow-hut-backend\\logs\\winston\\errors\\2024-19-03-17-error.log",
+            "hash": "0e0f79912a1b2b9048ecb4bef05c5e0374b09659be4aa30711fe1303c3199721"
+        },
+        {
+            "date": 1710850080364,
+            "name": "G:\\@Phero 2023\\digital-cow-hut-backend\\logs\\winston\\errors\\2024-19-03-18-error.log",
+            "hash": "01128895db45318397b0da03d6dc4f967339cd76405fa6b00ec3f3a193504a00"
+        },
+        {
+            "date": 1710853277969,
+            "name": "G:\\@Phero 2023\\digital-cow-hut-backend\\logs\\winston\\errors\\2024-19-03-19-error.log",
+            "hash": "220665fe6c4419cf887b8f04b1486d64576a8d67387222bf351fa45c9c11af77"
+        },
+        {
+            "date": 1710857030827,
+            "name": "G:\\@Phero 2023\\digital-cow-hut-backend\\logs\\winston\\errors\\2024-19-03-20-error.log",
+            "hash": "aad5d77419cff096bd3a158a1d0600ab51d1c1c6c2f1eeb135f324952fa03ae3"
+        }
+    ],
+    "hashType": "sha256"
 }
