@@ -1,0 +1,15 @@
+{
+    "keep": {
+        "days": true,
+        "amount": 14
+    },
+    "auditLog": "/Users/raihan/Desktop/My Files/Programming/Cow-hut-2024/digital-cow-hut-2024/logs/winston/sueccess/.c1dd1528a72702444cc93d3bfc641bc27c6f7f8e-audit.json",
+    "files": [
+        {
+            "date": 1710866271220,
+            "name": "/Users/raihan/Desktop/My Files/Programming/Cow-hut-2024/digital-cow-hut-2024/logs/winston/sueccess/2024-19-03-22-success.log",
+            "hash": "c0b1828ed283696ac78520441803e5090e7908cec2af69e1b594973c5709b7fe"
+        }
+    ],
+    "hashType": "sha256"
+}
