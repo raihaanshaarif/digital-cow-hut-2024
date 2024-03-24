@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import User from './user.model';
+
 import { IUser, IUserFilters } from './user.interface';
 import { userSearchableFields } from './user.constant';
 import { SortOrder } from 'mongoose';
@@ -8,14 +8,9 @@ import { IPaginationOptions } from '../../interfaces/pagination';
 import { IGenericResponse } from '../../interfaces/common';
 import ApiError from '../../../errors/apiError';
 import httpStatus from 'http-status';
+import { User } from './user.model';
 // import catchAsync from '../../../shared/catchAsync';
 // import pick from '../../../shared/pick';
-
-const createUser = async (data: IUser): Promise<IUser> => {
-  const newData: IUser = { ...data, income: 0 };
-  const result = await User.create(newData);
-  return result;
-};
 
 const getAllUsers = async (
   filters: IUserFilters,
@@ -108,7 +103,6 @@ const deleteUser = async (id: string): Promise<IUser | null> => {
 };
 
 export const UserService = {
-  createUser,
   getAllUsers,
   getSingleUser,
   updateUser,

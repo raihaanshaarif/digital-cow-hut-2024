@@ -8,32 +8,22 @@ import pick from '../../../shared/pick';
 import { userFilterableFields } from './user.constant';
 import { paginationFields } from '../../../constants/pagination';
 
-const createUser: RequestHandler = catchAsync(
+const getAllUsers: RequestHandler = catchAsync(
   async (req: Request, res: Response) => {
-    const result = await UserService.createUser(req.body);
-    sendResponse<IUser>(res, {
+    const filters = pick(req.query, userFilterableFields);
+    const paginationOptions = pick(req.query, paginationFields);
+
+    const result = await UserService.getAllUsers(filters, paginationOptions);
+
+    sendResponse<IUser[]>(res, {
       statusCode: httpStatus.OK,
       success: true,
-      message: 'user created successfully!',
-      data: result,
+      message: 'Users retrieved successfully !',
+      meta: result.meta,
+      data: result.data,
     });
   },
 );
-
-const getAllUsers = catchAsync(async (req: Request, res: Response) => {
-  const filters = pick(req.query, userFilterableFields);
-  const paginationOptions = pick(req.query, paginationFields);
-
-  const result = await UserService.getAllUsers(filters, paginationOptions);
-
-  sendResponse<IUser[]>(res, {
-    statusCode: httpStatus.OK,
-    success: true,
-    message: 'Users retrieved successfully !',
-    meta: result.meta,
-    data: result.data,
-  });
-});
 
 const getSingleUser = catchAsync(async (req: Request, res: Response) => {
   const id = req.params.id;
@@ -75,7 +65,6 @@ const deleteUser = catchAsync(async (req: Request, res: Response) => {
 });
 
 export const UserController = {
-  createUser,
   getAllUsers,
   getSingleUser,
   updateUser,

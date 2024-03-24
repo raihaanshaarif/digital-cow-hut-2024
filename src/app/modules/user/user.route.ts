@@ -5,11 +5,11 @@ import validateRequest from '../../middlewares/validateRequest';
 
 const userRouter = express.Router();
 
-userRouter.post(
+/* userRouter.post(
   '/create-user',
   validateRequest(UserValidation.createUserZodSchema),
   UserController.createUser,
-);
+); */
 
 userRouter.get('/:id', UserController.getSingleUser);
 userRouter.get('/', UserController.getAllUsers);

@@ -1,10 +1,11 @@
 import httpStatus from 'http-status';
 import { Cow } from '../cow/cow.model';
-import User from '../user/user.model';
+
 import ApiError from '../../../errors/apiError';
 import mongoose from 'mongoose';
 import { Orders } from './orders.model';
 import { IOrders } from './orders.interface';
+import { User } from '../user/user.model';
 
 const createOrder = async (data: IOrders): Promise<IOrders | null> => {
   const cowDetail = await Cow.findById(data.cow);
@@ -62,6 +63,12 @@ const createOrder = async (data: IOrders): Promise<IOrders | null> => {
   return newOrderAllData;
 };
 
+const getOrders = async (order: IOrders) => {
+  const result = await Orders.find(order);
+  return result;
+};
+
 export const OrdersService = {
   createOrder,
+  getOrders,
 };
