@@ -1,59 +1,26 @@
 /* eslint-disable no-unused-vars */
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 
-export type IRole = 'admin';
-
-export type ILoginAdmin = {
-  phoneNumber: string;
-  password: string;
-};
-
-export type ILoginAdminResponse = {
-  accessToken: string;
-  refreshToken?: string;
+type IName = {
+  firstName: string;
+  lastName: string;
 };
 
 export type IAdmin = {
-  phoneNumber: string;
-  role?: IRole;
+  _id: Types.ObjectId;
   password: string;
-  name: {
-    firstName: string;
-    lastName: string;
-  };
-  address: string;
-};
-
-export type IAdminResponse = {
+  role: 'admin';
+  name: IName;
   phoneNumber: string;
-  role?: IRole;
-
-  name: {
-    firstName: string;
-    lastName: string;
-  };
   address: string;
 };
 
 export type AdminModel = {
   isAdminExist(
     phoneNumber: string,
-  ): Promise<Pick<IAdmin, 'phoneNumber' | 'password' | 'role'>>;
+  ): Promise<Pick<IAdmin, 'password' | 'role' | '_id'>>;
   isPasswordMatched(
     givenPassword: string,
     savedPassword: string,
   ): Promise<boolean>;
 } & Model<IAdmin>;
-
-export type ICowFilters = {
-  searchTerm?: string;
-  // name?: string;
-  // location?: ILocation;
-  // age?: number;
-  // price?: number;
-  // category?: ICategory;
-  // weight?: number;
-  // label?: ILabel;
-  // minPrice?: number;
-  // maxPrice?: number;
-};

@@ -1,10 +1,9 @@
-export const userRoles = ['seller', 'buyer'];
+export const userRole = ['seller', 'buyer'];
 
-export const userFilterableFields = ['searchTerm', 'phoneNumber', 'role'];
-
-export const userSearchableFields = [
-  'phoneNumber',
-  'role',
-  'name.firstName',
-  'name.lastName',
-];
+// profile field projection:
+export const profileProjection = {
+  name: 1,
+  phoneNumber: 1,
+  address: 1,
+  _id: 0,
+};

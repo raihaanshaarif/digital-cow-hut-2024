@@ -1,16 +1,12 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable no-unused-vars */
-/* eslint-disable no-console */
-/* eslint-disable no-unused-expressions */
 import { ErrorRequestHandler, NextFunction, Request, Response } from 'express';
 import config from '../../config';
-
-import { ZodError } from 'zod';
-import handleCastError from '../../errors/handleCastError';
-import handleZodError from '../../errors/handleZodError';
 import { IGenericErrorMessage } from '../../interfaces/error';
-import { errorlogger } from '../../shared/logger';
 import handleValidationError from '../../errors/handleValidationError';
+
+// import { errorLogger } from "../../shared/logger";
+import { ZodError } from 'zod';
+import handleZodError from '../../errors/handleZodError';
+import handleCastError from '../../errors/handleCastError';
 import ApiError from '../../errors/apiError';
 
 const globalErrorHandler: ErrorRequestHandler = (
@@ -19,12 +15,14 @@ const globalErrorHandler: ErrorRequestHandler = (
   res: Response,
   next: NextFunction,
 ) => {
-  config.env === 'development'
-    ? console.log(`🐱‍🏍 globalErrorHandler ~~`, { error })
-    : errorlogger.error(`🐱‍🏍 globalErrorHandler ~~`, error);
+  if (config.env === 'development') {
+    console.log('🚀 globalErrorHandler ~', error);
+  } else {
+    console.log('🚀 globalErrorHandler ~', error);
+  }
 
   let statusCode = 500;
-  let message = 'Something went wrong !';
+  let message = 'Something went Wrong';
   let errorMessages: IGenericErrorMessage[] = [];
 
   if (error?.name === 'ValidationError') {
@@ -44,32 +42,24 @@ const globalErrorHandler: ErrorRequestHandler = (
     errorMessages = simplifiedError.errorMessages;
   } else if (error instanceof ApiError) {
     statusCode = error?.statusCode;
-    message = error.message;
+    message = error?.message;
     errorMessages = error?.message
-      ? [
-          {
-            path: '',
-            message: error?.message,
-          },
-        ]
+      ? [{ path: '', message: error.message }]
       : [];
   } else if (error instanceof Error) {
     message = error?.message;
     errorMessages = error?.message
-      ? [
-          {
-            path: '',
-            message: error?.message,
-          },
-        ]
+      ? [{ path: '', message: error.message }]
       : [];
+  } else {
+    next();
   }
 
   res.status(statusCode).json({
-    success: false,
+    succuss: false,
     message,
     errorMessages,
-    stack: config.env !== 'production' ? error?.stack : undefined,
+    stack: config.env !== 'production' ? error?.stack : null,
   });
 };
 

@@ -1,14 +1,18 @@
 /* eslint-disable no-unused-vars */
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
+
+type IUserRole = 'seller' | 'buyer';
+type IName = {
+  firstName: string;
+  lastName: string;
+};
 
 export type IUser = {
+  _id: Types.ObjectId;
   phoneNumber: string;
-  role: 'seller' | 'buyer';
+  role: IUserRole;
   password: string;
-  name: {
-    firstName: string;
-    lastName: string;
-  };
+  name: IName;
   address: string;
   budget: number;
   income: number;
@@ -20,9 +24,8 @@ export type IUserFilters = {
 export type UserModel = {
   isUserExist(
     phoneNumber: string,
-  ): Promise<Pick<IUser, 'phoneNumber' | 'password' | 'role'> | null>;
-
-  isPasswordMatch(
+  ): Promise<Pick<IUser, 'password' | 'role' | '_id'>>;
+  isPasswordMatched(
     givenPassword: string,
     savedPassword: string,
   ): Promise<boolean>;

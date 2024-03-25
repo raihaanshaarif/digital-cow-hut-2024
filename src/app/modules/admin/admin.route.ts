@@ -1,7 +1,7 @@
 import express from 'express';
 import validateRequest from '../../middlewares/validateRequest';
-import { AdminValidation } from './admin.validation';
 import { AdminController } from './admin.controller';
+import { AdminValidation } from './admin.validation';
 
 const router = express.Router();
 
@@ -13,7 +13,7 @@ router.post(
 
 router.post(
   '/login',
-  validateRequest(AdminValidation.adminLoginZodSchema),
+  validateRequest(AdminValidation.loginAdminZodSchema),
   AdminController.loginAdmin,
 );
 

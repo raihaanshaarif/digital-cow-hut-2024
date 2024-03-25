@@ -74,6 +74,26 @@
             "date": 1711314111893,
             "name": "/Users/raihan/Desktop/My Files/Programming/Cow-hut-2024/digital-cow-hut-2024/logs/winston/errors/2024-25-03-03-error.log",
             "hash": "cf0c63122af53e2e69825078cebdbaa4fe14c902c8fb18c34628afe29d38d0c6"
+        },
+        {
+            "date": 1711387248181,
+            "name": "/Users/raihan/Desktop/My Files/Programming/Cow-hut-2024/digital-cow-hut-2024/logs/winston/errors/2024-25-03-23-error.log",
+            "hash": "b61ae3907b1cddc16f80708bbb3a5520879329a831a1d1702d356869066d7730"
+        },
+        {
+            "date": 1711390372969,
+            "name": "/Users/raihan/Desktop/My Files/Programming/Cow-hut-2024/digital-cow-hut-2024/logs/winston/errors/2024-26-03-00-error.log",
+            "hash": "731823b519fa6d96c5a64a1bc57f91ed4878f59627cde4041ba0154727ee797b"
+        },
+        {
+            "date": 1711393372964,
+            "name": "/Users/raihan/Desktop/My Files/Programming/Cow-hut-2024/digital-cow-hut-2024/logs/winston/errors/2024-26-03-01-error.log",
+            "hash": "188d9e527cf5c28d1366b721b47195d9373ebf5e255ca7be500647624e364929"
+        },
+        {
+            "date": 1711396824105,
+            "name": "/Users/raihan/Desktop/My Files/Programming/Cow-hut-2024/digital-cow-hut-2024/logs/winston/errors/2024-26-03-02-error.log",
+            "hash": "e09f0c1f72aa42152bc8403e3998707e1f9cc23e3f558c8df1074b6f52e09fbc"
         }
     ],
     "hashType": "sha256"

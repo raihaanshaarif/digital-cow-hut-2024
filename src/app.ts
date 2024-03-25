@@ -5,11 +5,13 @@ import cors from 'cors';
 import router from './app/routes';
 import globalErrorHandler from './app/middlewares/globalErrorHandler';
 import httpStatus from 'http-status';
+import cookieParser from 'cookie-parser';
 
 app.use(cors());
 // parser
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 app.use('/api/v1/', router);
 

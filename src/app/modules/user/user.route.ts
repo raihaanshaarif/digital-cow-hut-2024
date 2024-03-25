@@ -1,23 +1,42 @@
 import express from 'express';
 import { UserController } from './user.controller';
-import { UserValidation } from './user.validation';
 import validateRequest from '../../middlewares/validateRequest';
+import { UserValidation } from './user.validation';
+import auth from '../../middlewares/auth';
+import { ENUM_USER_ROLE } from '../../../enums/users';
 
-const userRouter = express.Router();
+const router = express.Router();
 
-/* userRouter.post(
-  '/create-user',
-  validateRequest(UserValidation.createUserZodSchema),
-  UserController.createUser,
-); */
+// access: specific admin, specific buyer, specific seller
+router.get(
+  '/my-profile',
+  auth(ENUM_USER_ROLE.BUYER, ENUM_USER_ROLE.SELLER, ENUM_USER_ROLE.ADMIN),
+  UserController.getUserProfile,
+);
 
-userRouter.get('/:id', UserController.getSingleUser);
-userRouter.get('/', UserController.getAllUsers);
-userRouter.patch(
+// access: specific admin, specific buyer, specific seller
+router.patch(
+  '/my-profile',
+  validateRequest(UserValidation.updateProfileZodSchema),
+  auth(ENUM_USER_ROLE.BUYER, ENUM_USER_ROLE.SELLER, ENUM_USER_ROLE.ADMIN),
+  UserController.updateUserProfile,
+);
+
+// access: admin
+router.get('/:id', auth(ENUM_USER_ROLE.ADMIN), UserController.getSingleUser);
+
+// access: admin
+router.delete('/:id', auth(ENUM_USER_ROLE.ADMIN), UserController.deleteUser);
+
+// access: admin
+router.patch(
   '/:id',
   validateRequest(UserValidation.updateUserZodSchema),
+  auth(ENUM_USER_ROLE.ADMIN),
   UserController.updateUser,
 );
-userRouter.delete('/:id', UserController.deleteUser);
 
-export const UserRouter = userRouter;
+// access: admin
+router.get('/', auth(ENUM_USER_ROLE.ADMIN), UserController.getAllUsers);
+
+export const UserRoutes = router;

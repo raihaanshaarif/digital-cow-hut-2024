@@ -1,4 +1,12 @@
-export const location = [
+import {
+  IBreed,
+  ICategory,
+  ICowFilters,
+  ILabel,
+  ILocation,
+} from './cow.interface';
+
+export const location: ILocation[] = [
   'Dhaka',
   'Chattogram',
   'Barishal',
@@ -9,7 +17,7 @@ export const location = [
   'Mymensingh',
 ];
 
-export const breed = [
+export const breed: IBreed[] = [
   'Brahman',
   'Nellore',
   'Sahiwal',
@@ -18,31 +26,16 @@ export const breed = [
   'Tharparkar',
   'Kankrej',
 ];
-export const label = ['for sale', 'sold out'];
-export const category = ['Dairy', 'Beef', 'DualPurpose'];
 
-export const cowSearchableFields = [
-  'searchTerm',
-  'name',
-  // 'price',
-  'location',
-  'breed',
-  'category',
-  // 'age',
-  // 'weight',
-  'label',
-];
+export const label: ILabel[] = ['for sale', 'sold out'];
 
-export const cowFilterableFields = [
-  'searchTerm',
-  'name',
-  'price',
-  'location',
-  'breed',
-  'category',
-  'age',
-  'weight',
-  'label',
+export const category: ICategory[] = ['Dairy', 'Beef', 'DualPurpose'];
+
+export const cowFilterableFields: (keyof ICowFilters)[] = [
   'minPrice',
   'maxPrice',
+  'location',
+  'searchTerm',
 ];
+
+export const cowSearchableFields = ['location', 'breed', 'category'];

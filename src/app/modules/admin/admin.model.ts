@@ -1,34 +1,31 @@
 /* eslint-disable @typescript-eslint/no-this-alias */
-import bcrypt from 'bcrypt';
+import { Schema, UpdateQuery, model } from 'mongoose';
 import { AdminModel, IAdmin } from './admin.interface';
-import { Schema, model } from 'mongoose';
+import bcrypt from 'bcrypt';
 import config from '../../../config';
 
-export const AdminSchema = new Schema<IAdmin, AdminModel>(
+const adminSchema = new Schema<IAdmin, AdminModel>(
   {
-    role: {
-      type: String,
-      required: true,
-    },
     password: {
       type: String,
       required: true,
       select: 0,
     },
-    name: {
-      type: {
-        firstName: {
-          type: String,
-          required: true,
-        },
-        lastName: {
-          type: String,
-          required: true,
-        },
-      },
+    role: {
+      type: String,
       required: true,
+      enum: ['admin'],
     },
-
+    name: {
+      firstName: {
+        type: String,
+        required: true,
+      },
+      lastName: {
+        type: String,
+        required: true,
+      },
+    },
     phoneNumber: {
       type: String,
       required: true,
@@ -47,31 +44,41 @@ export const AdminSchema = new Schema<IAdmin, AdminModel>(
   },
 );
 
-AdminSchema.statics.isAdminExist = async function (
+adminSchema.statics.isAdminExist = async function (
   phoneNumber: string,
-): Promise<Pick<IAdmin, 'phoneNumber' | 'password' | 'role'> | null> {
-  return await Admin.findOne(
-    { phoneNumber },
-    { phoneNumber: 1, password: 1, role: 1 },
-  );
+): Promise<Pick<IAdmin, 'password' | 'role' | '_id'> | null> {
+  return await this.findOne({ phoneNumber }, { password: 1, role: 1 }).lean();
 };
 
-AdminSchema.statics.isPasswordMatched = async function (
+adminSchema.statics.isPasswordMatched = async function (
   givenPassword: string,
   savedPassword: string,
 ): Promise<boolean> {
   return await bcrypt.compare(givenPassword, savedPassword);
 };
 
-// hashing Admin password
-AdminSchema.pre('save', async function (next) {
-  //Hash password
-  this.password = await bcrypt.hash(
-    this.password,
+adminSchema.pre('findOneAndUpdate', async function (next) {
+  const user = this.getUpdate() as UpdateQuery<Partial<IAdmin | null>>;
+  if (!user.password) {
+    next(); // no password, so no update.
+  } else {
+    const newPassword = user.password;
+    user.password = await bcrypt.hash(
+      newPassword,
+      Number(config.bcrypt_salt_rounds),
+    );
+    next();
+  }
+});
+
+adminSchema.pre('save', async function (next) {
+  // admin password hashing
+  const admin = this;
+  admin.password = await bcrypt.hash(
+    admin.password,
     Number(config.bcrypt_salt_rounds),
   );
-
   next();
 });
 
-export const Admin = model<IAdmin, AdminModel>('Admin', AdminSchema);
+export const Admin = model<IAdmin, AdminModel>('Admin', adminSchema);

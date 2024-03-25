@@ -1,18 +1,33 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable no-unused-vars */
-import { Request, RequestHandler, Response } from 'express';
+import { Request, Response } from 'express';
 import catchAsync from '../../../shared/catchAsync';
-import sendResponse from '../../../shared/sendResponse';
-import { AuthService } from './auth.service';
-import { IUser } from '../user/user.interface';
+
 import httpStatus from 'http-status';
-import { IAdmin } from '../admin/admin.interface';
+
 import config from '../../../config';
 import { IRefreshTokenResponse } from './auth.interface';
+import { AuthService } from './auth.service';
+import { IUser } from '../user/user.interface';
+import sendResponse from '../../../shared/sendResponse';
 
-const loginUser = catchAsync(async (req: Request, res: Response) => {
-  const { ...loginData } = req.body;
-  const result = await AuthService.loginUser(loginData);
+const userSignup = catchAsync(async (req: Request, res: Response) => {
+  const { ...userData } = req.body;
+  const result = await AuthService.userSignup(userData);
+
+  const { password, ...rest } = result;
+
+  sendResponse<Omit<IUser, 'password'>>(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'User created successfully',
+    data: rest,
+  });
+});
+
+const userLogin = catchAsync(async (req: Request, res: Response) => {
+  const { ...userData } = req.body;
+  const result = await AuthService.userLogin(userData);
 
   const { refreshToken, ...rest } = result;
 
@@ -24,30 +39,18 @@ const loginUser = catchAsync(async (req: Request, res: Response) => {
   res.cookie('refreshToken', refreshToken, cookieOptions);
 
   sendResponse<IRefreshTokenResponse>(res, {
-    statusCode: 200,
     success: true,
-    message: 'User logged in successfully !',
+    statusCode: httpStatus.OK,
+    message: 'User logged in successfully',
     data: rest,
   });
 });
-
-const createUser: RequestHandler = catchAsync(
-  async (req: Request, res: Response) => {
-    const result = await AuthService.createUser(req.body);
-    sendResponse<IUser>(res, {
-      statusCode: httpStatus.OK,
-      success: true,
-      message: 'user created successfully!',
-      data: result,
-    });
-  },
-);
 
 const refreshToken = catchAsync(async (req: Request, res: Response) => {
   const { refreshToken } = req.cookies;
   const result = await AuthService.refreshToken(refreshToken);
 
-  //Set Refresh Token in Cookie
+  // set refresh token into cookie
   const cookieOptions = {
     secure: config.env === 'production',
     httpOnly: true,
@@ -64,7 +67,7 @@ const refreshToken = catchAsync(async (req: Request, res: Response) => {
 });
 
 export const AuthController = {
-  loginUser,
-  createUser,
+  userSignup,
+  userLogin,
   refreshToken,
 };

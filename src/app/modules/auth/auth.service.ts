@@ -1,91 +1,99 @@
 import httpStatus from 'http-status';
-import ApiError from '../../../errors/apiError';
-
-import {
-  ILoginUser,
-  ILoginUserResponse,
-  IRefreshTokenResponse,
-} from './auth.interface';
 import { User } from '../user/user.model';
 import { IUser } from '../user/user.interface';
-
+import { ILoginUserResponse, IRefreshTokenResponse } from './auth.interface';
 import { jwtHelpers } from '../../../helpers/jwtHelpers';
 import config from '../../../config';
 import { Secret } from 'jsonwebtoken';
+import ApiError from '../../../errors/apiError';
+import { Admin } from '../admin/admin.model';
 
-const loginUser = async (payload: ILoginUser): Promise<ILoginUserResponse> => {
-  const { id, password } = payload;
-  // console.log(payload);
-
-  // Check if the user exists
-  const isUserExist = await User.isUserExist(id);
-  if (!isUserExist) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
+const userSignup = async (user: IUser): Promise<IUser> => {
+  const newUser = await User.create(user);
+  if (!newUser) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Failed to create user');
   }
-  //Check if the given and stored password mismatched
+  return newUser.toObject();
+};
+
+const userLogin = async (
+  payload: Pick<IUser, 'phoneNumber' | 'password'>,
+): Promise<ILoginUserResponse> => {
+  const { phoneNumber, password } = payload;
+
+  // user exists:
+  const isUserExist = await User.isUserExist(phoneNumber);
+  if (!isUserExist) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'User does not exist');
+  }
+
+  // password matching:
   if (
-    isUserExist.password &&
-    !(await User.isPasswordMatch(password, isUserExist?.password))
+    !isUserExist.password ||
+    !(await User.isPasswordMatched(password, isUserExist.password))
   ) {
     throw new ApiError(httpStatus.UNAUTHORIZED, 'Password is incorrect');
   }
 
-  // Create access token and refresh token
-  const { phoneNumber, role } = isUserExist;
+  // create access token & refresh token
+  const { _id, role } = isUserExist;
   const accessToken = jwtHelpers.createToken(
-    { phoneNumber, role },
-    config.jwt_secret as Secret,
-    config.jwt_expires_in as string,
+    { _id, role },
+    config.jwt.secret as Secret,
+    config.jwt.expires_in as string,
+  );
+  const refreshToken = jwtHelpers.createToken(
+    { _id, role },
+    config.jwt.refresh_secret as Secret,
+    config.jwt.refresh_expires_in as string,
   );
 
-  const refreshToken = jwtHelpers.createToken(
-    { phoneNumber, role },
-    config.jwt_refresh_token_secret as Secret,
-    config.jwt_refresh_token_expires_in as string,
-  );
   return {
     accessToken,
     refreshToken,
   };
 };
 
-const createUser = async (data: IUser): Promise<IUser> => {
-  const newData: IUser = { ...data, income: 0 };
-  const result = await User.create(newData);
-  return result;
-};
-
 const refreshToken = async (token: string): Promise<IRefreshTokenResponse> => {
-  //verify refresh token
+  // verify refresh token
   let verifiedToken = null;
   try {
     verifiedToken = jwtHelpers.verifyToken(
       token,
-      config.jwt_refresh_token_secret as Secret,
+      config.jwt.refresh_secret as Secret,
     );
   } catch (err) {
-    throw new ApiError(httpStatus.FORBIDDEN, 'Invalid refresh token');
+    throw new ApiError(httpStatus.FORBIDDEN, 'Invalid Refresh Token');
   }
 
-  const { phoneNumber } = verifiedToken;
+  console.log(verifiedToken);
 
-  // If User exist in Database
-  const isUserExist = await User.isUserExist(phoneNumber);
+  const { _id } = verifiedToken;
+
+  // if user exist in database
+  const isUserExist = (await User.findById(_id)) || (await Admin.findById(_id));
+
   if (!isUserExist) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
+    throw new ApiError(httpStatus.NOT_FOUND, 'User does not exist');
   }
 
-  // Generate a new access token
+  // generate new token
   const newAccessToken = jwtHelpers.createToken(
-    { phoneNumber },
-    config.jwt_secret as Secret,
-    config.jwt_expires_in as string,
+    {
+      _id: isUserExist._id,
+      role: isUserExist.role,
+    },
+    config.jwt.secret as Secret,
+    config.jwt.expires_in as string,
   );
-  return { accessToken: newAccessToken };
+
+  return {
+    accessToken: newAccessToken,
+  };
 };
 
 export const AuthService = {
-  loginUser,
-  createUser,
+  userSignup,
+  userLogin,
   refreshToken,
 };

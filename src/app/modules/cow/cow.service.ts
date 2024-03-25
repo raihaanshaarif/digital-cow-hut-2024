@@ -1,28 +1,47 @@
-import { SortOrder } from 'mongoose';
-import { paginationHelpers } from '../../../helpers/paginationHelpers';
-import { IGenericResponse } from '../../interfaces/common';
-import { IPaginationOptions } from '../../interfaces/pagination';
-import { cowSearchableFields } from './cow.constant';
+import httpStatus from 'http-status';
 import { ICow, ICowFilters } from './cow.interface';
 import { Cow } from './cow.model';
-import ApiError from '../../../errors/apiError';
-import httpStatus from 'http-status';
 
-const createCow = async (cowData: ICow): Promise<ICow> => {
-  const result = await Cow.create(cowData);
-  return result;
+import { IGenericResponse } from '../../../interfaces/common';
+
+import { cowSearchableFields } from './cow.constant';
+import { SortOrder } from 'mongoose';
+import { JwtPayload } from 'jsonwebtoken';
+import ApiError from '../../../errors/apiError';
+
+import { paginationHelpers } from '../../../helpers/paginationHelpers';
+import { IPaginationOptions } from '../../../interfaces/paination';
+
+// create a cow
+const createCow = async (user: JwtPayload, payload: ICow): Promise<ICow> => {
+  if (payload.seller !== user._id) {
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      `Seller Field will be your user id : ${user._id}`,
+    );
+  }
+
+  const newCow = (await Cow.create(payload)).populate('seller');
+
+  if (!newCow) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Failed to create cow');
+  }
+  return newCow;
 };
 
+// get all cows
 const getAllCows = async (
   filters: ICowFilters,
-  paginationOption: IPaginationOptions,
+  paginationOptions: IPaginationOptions,
 ): Promise<IGenericResponse<ICow[]>> => {
-  const { searchTerm, maxPrice, minPrice, ...filtersData } = filters;
+  const { searchTerm, ...filtersData } = filters;
+  const { page, limit, skip, sortBy, sortOrder } =
+    paginationHelpers.calculatePagination(paginationOptions);
 
-  const andCondition = [];
+  const andConditions = [];
 
   if (searchTerm) {
-    andCondition.push({
+    andConditions.push({
       $or: cowSearchableFields.map(field => ({
         [field]: {
           $regex: searchTerm,
@@ -31,112 +50,127 @@ const getAllCows = async (
       })),
     });
   }
-  if (searchTerm) {
-    if (!isNaN(parseFloat(searchTerm))) {
-      // [field] = parseFloat(searchTerm);
-      // console.log(field);
-      // console.log(searchTerm);
-    }
-  }
-
-  // console.log(minPrice, maxPrice);
-
-  if (minPrice !== undefined) {
-    andCondition.push({
-      price: {
-        $gte: minPrice,
-      },
-    });
-  }
-  if (maxPrice !== undefined) {
-    andCondition.push({
-      price: {
-        $lte: maxPrice,
-      },
-    });
-  }
-
-  if (minPrice !== undefined && maxPrice !== undefined) {
-    andCondition.push({
-      price: {
-        $gte: minPrice,
-        $lte: maxPrice,
-      },
-    });
-  }
 
   if (Object.keys(filtersData).length) {
-    andCondition.push({
-      $and: Object.entries(filtersData).map(([field, value]) => ({
-        [field]: value,
-      })),
+    andConditions.push({
+      $and: Object.entries(filtersData).map(([field, value]) => {
+        if (field === 'maxPrice') {
+          return { price: { $lte: value } };
+        }
+        if (field === 'minPrice') {
+          return { price: { $gte: value } };
+        } else {
+          return { [field]: value };
+        }
+      }),
     });
   }
-
-  const { page, limit, skip, sortBy, sortOrder } =
-    paginationHelpers.calculatePagination(paginationOption);
 
   const sortConditions: { [key: string]: SortOrder } = {};
 
   if (sortBy && sortOrder) {
     sortConditions[sortBy] = sortOrder;
   }
+  const whereConditions =
+    andConditions.length > 0 ? { $and: andConditions } : {};
 
-  const whereCondition = andCondition.length > 0 ? { $and: andCondition } : {};
-
-  const result = await Cow.find(whereCondition)
+  const result = await Cow.find(whereConditions)
     .populate('seller')
     .sort(sortConditions)
     .skip(skip)
     .limit(limit);
 
-  const total = await Cow.countDocuments(whereCondition);
+  const count = await Cow.countDocuments(whereConditions);
 
   return {
     meta: {
       page,
       limit,
-      total,
+      count,
     },
     data: result,
   };
 };
 
-const getSingleCow = async (id: string): Promise<ICow | null> => {
-  const isExist = await Cow.findOne({ _id: id });
-  if (!isExist) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'Cow not Found');
-  }
-  const result = await Cow.findById(id);
-
+// get single cow
+const getSingleCow = async (id: string): Promise<ICow> => {
+  const result = await Cow.findById(id)
+    .populate('seller')
+    .orFail(new ApiError(httpStatus.NOT_FOUND, 'Cow not found'));
   return result;
 };
 
+// update a cow
 const updateCow = async (
+  user: JwtPayload,
   id: string,
   payload: Partial<ICow>,
 ): Promise<ICow | null> => {
-  const isExist = await Cow.findOne({ _id: id });
-  if (!isExist) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'Cow not found');
+  await Cow.exists({ _id: id }).orFail(
+    new ApiError(httpStatus.NOT_FOUND, 'Cow not found'),
+  );
+
+  // Only the specific seller of the cow can update
+  const isSellerValid = await Cow.isSellerValid(id, user._id);
+  if (!isSellerValid) {
+    throw new ApiError(
+      httpStatus.FORBIDDEN,
+      'Can only be accessed by the seller of the cow',
+    );
+  }
+
+  // No data from client-side
+  if (Object.keys(payload).length < 1) {
+    throw new Error('No data found to update');
+  }
+
+  // if seller field updates?
+  // seller field === logged in seller id
+  if (payload.seller && payload.seller !== user._id) {
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      `Seller Field will be your user id : ${user._id}`,
+    );
   }
 
   const result = await Cow.findOneAndUpdate({ _id: id }, payload, {
     new: true,
-  });
+  })
+    .populate('seller')
+    .orFail(new ApiError(httpStatus.NOT_FOUND, 'Failed to Update'));
 
   return result;
 };
 
-const deleteCow = async (id: string): Promise<ICow | null> => {
-  const result = await Cow.findByIdAndDelete(id);
+// delete a cow
+const deleteCow = async (
+  user: JwtPayload,
+  id: string,
+): Promise<ICow | null> => {
+  await Cow.exists({ _id: id }).orFail(
+    new ApiError(httpStatus.NOT_FOUND, 'No cow found to delete'),
+  );
+
+  // Only the specific seller of the cow can delete
+  const isSellerValid = await Cow.isSellerValid(id, user._id);
+
+  if (!isSellerValid) {
+    throw new ApiError(
+      httpStatus.FORBIDDEN,
+      'Can only be accessed by the seller of the cow',
+    );
+  }
+
+  const result = await Cow.findByIdAndDelete(id).orFail(
+    new ApiError(httpStatus.NOT_FOUND, 'Failed to Delete'),
+  );
   return result;
 };
 
 export const CowService = {
   createCow,
-  getSingleCow,
   getAllCows,
+  getSingleCow,
   updateCow,
   deleteCow,
 };

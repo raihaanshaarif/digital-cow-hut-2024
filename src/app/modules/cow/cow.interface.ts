@@ -21,9 +21,9 @@ export type IBreed =
   | 'Tharparkar'
   | 'Kankrej';
 
-export type ICategory = 'Dairy' | 'Beef' | 'DualPurpose';
+export type ILabel = 'for sale' | 'sold out';
 
-type ILabel = 'for sell' | 'sold out';
+export type ICategory = 'Dairy' | 'Beef' | 'DualPurpose';
 
 export type ICow = {
   name: string;
@@ -37,17 +37,13 @@ export type ICow = {
   seller: Types.ObjectId | IUser;
 };
 
-export type CowModel = Model<ICow, Record<string, unknown>>;
+export type CowModel = {
+  isSellerValid(cowId: string, sellerId: string): Promise<ICow | null>;
+} & Model<ICow>;
 
 export type ICowFilters = {
-  searchTerm?: string;
-  name?: string;
-  location?: ILocation;
-  age?: number;
-  price?: number;
-  category?: ICategory;
-  weight?: number;
-  label?: ILabel;
   minPrice?: number;
   maxPrice?: number;
+  location?: string;
+  searchTerm?: string;
 };

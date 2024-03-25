@@ -1,19 +1,16 @@
 import { z } from 'zod';
+import { userRole } from '../user/user.constant';
 
-const loginZodSchema = z.object({
+const userSignupZodSchema = z.object({
   body: z.object({
-    id: z.string({
-      required_error: 'ID is required',
+    phoneNumber: z.string({
+      required_error: 'Phone Number is required',
+    }),
+    role: z.enum([...userRole] as [string, ...string[]], {
+      required_error: 'Role is required',
     }),
     password: z.string({
-      required_error: 'Password is required',
-    }),
-  }),
-});
-const createUserZodSchema = z.object({
-  body: z.object({
-    password: z.string({
-      required_error: 'password is required!',
+      required_error: 'Password Number is required',
     }),
     name: z.object({
       firstName: z.string({
@@ -23,17 +20,26 @@ const createUserZodSchema = z.object({
         required_error: 'Last name is required',
       }),
     }),
-    phoneNumber: z.string({
-      required_error: 'phone number is required!',
-    }),
-    role: z.string({
-      required_error: 'role is required!',
-    }),
     address: z.string({
-      required_error: 'address is required!',
+      required_error: 'Address is required',
     }),
-    income: z.number().optional(),
-    budget: z.number().optional(),
+    budget: z.number({
+      required_error: 'Budget is required',
+    }),
+    income: z.number({
+      required_error: 'Income is required',
+    }),
+  }),
+});
+
+const userLoginZodSchema = z.object({
+  body: z.object({
+    phoneNumber: z.string({
+      required_error: 'Phone Number is required',
+    }),
+    password: z.string({
+      required_error: 'Password Number is required',
+    }),
   }),
 });
 
@@ -46,7 +52,7 @@ const refreshTokenZodSchema = z.object({
 });
 
 export const AuthValidation = {
-  loginZodSchema,
-  createUserZodSchema,
+  userSignupZodSchema,
+  userLoginZodSchema,
   refreshTokenZodSchema,
 };

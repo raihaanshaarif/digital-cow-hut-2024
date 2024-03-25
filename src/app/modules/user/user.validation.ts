@@ -1,46 +1,38 @@
 import { z } from 'zod';
+import { userRole } from './user.constant';
 
 const updateUserZodSchema = z.object({
   body: z.object({
-    password: z
-      .string({
-        required_error: 'password is required!',
-      })
-      .optional(),
+    phoneNumber: z.string().optional(),
+    role: z.enum([...userRole] as [string, ...string[]]).optional(),
+    password: z.string().optional(),
     name: z
       .object({
-        firstName: z
-          .string({
-            required_error: 'First name is required',
-          })
-          .optional(),
-        lastName: z
-          .string({
-            required_error: 'Last name is required',
-          })
-          .optional(),
+        firstName: z.string().optional(),
+        lastName: z.string().optional(),
       })
       .optional(),
-    phoneNumber: z
-      .string({
-        required_error: 'phone number is required!',
-      })
-      .optional(),
-    role: z
-      .string({
-        required_error: 'role is required!',
-      })
-      .optional(),
-    address: z
-      .string({
-        required_error: 'address is required!',
-      })
-      .optional(),
-    income: z.number().optional(),
+    address: z.string().optional(),
     budget: z.number().optional(),
+    income: z.number().optional(),
+  }),
+});
+
+const updateProfileZodSchema = z.object({
+  body: z.object({
+    password: z.string().optional(),
+    name: z
+      .object({
+        firstName: z.string().optional(),
+        lastName: z.string().optional(),
+      })
+      .optional(),
+    phoneNumber: z.string().optional(),
+    address: z.string().optional(),
   }),
 });
 
 export const UserValidation = {
   updateUserZodSchema,
+  updateProfileZodSchema,
 };

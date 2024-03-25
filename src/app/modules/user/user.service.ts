@@ -1,104 +1,148 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-
-import { IUser, IUserFilters } from './user.interface';
-import { userSearchableFields } from './user.constant';
-import { SortOrder } from 'mongoose';
-import { paginationHelpers } from '../../../helpers/paginationHelpers';
-import { IPaginationOptions } from '../../interfaces/pagination';
-import { IGenericResponse } from '../../interfaces/common';
-import ApiError from '../../../errors/apiError';
 import httpStatus from 'http-status';
+
+import { IUser } from './user.interface';
 import { User } from './user.model';
-// import catchAsync from '../../../shared/catchAsync';
-// import pick from '../../../shared/pick';
 
-const getAllUsers = async (
-  filters: IUserFilters,
-  paginationOptions: IPaginationOptions,
-): Promise<IGenericResponse<IUser[]>> => {
-  const { searchTerm, ...filtersData } = filters;
-  const { page, limit, skip, sortBy, sortOrder } =
-    paginationHelpers.calculatePagination(paginationOptions);
+import { Admin } from '../admin/admin.model';
+import { IAdmin } from '../admin/admin.interface';
+import { JwtPayload } from 'jsonwebtoken';
+import { profileProjection } from './user.constant';
+import ApiError from '../../../errors/apiError';
+import { ENUM_USER_ROLE } from '../../../enums/users';
 
-  const andConditions = [];
-
-  if (searchTerm) {
-    andConditions.push({
-      $or: userSearchableFields.map(field => ({
-        [field]: {
-          $regex: searchTerm,
-          $options: 'i',
-        },
-      })),
-    });
-  }
-
-  if (Object.keys(filtersData).length) {
-    andConditions.push({
-      $and: Object.entries(filtersData).map(([field, value]) => ({
-        [field]: value,
-      })),
-    });
-  }
-
-  const sortConditions: { [key: string]: SortOrder } = {};
-
-  if (sortBy && sortOrder) {
-    sortConditions[sortBy] = sortOrder;
-  }
-  const whereConditions =
-    andConditions.length > 0 ? { $and: andConditions } : {};
-
-  const result = await User.find(whereConditions)
-    .sort(sortConditions)
-    .skip(skip)
-    .limit(limit);
-
-  const total = await User.countDocuments();
-
-  return {
-    meta: {
-      page,
-      limit,
-      total,
-    },
-    data: result,
-  };
+// get all users:
+const getAllUsers = async (): Promise<IUser[]> => {
+  const users = await User.find({}).orFail(
+    new ApiError(httpStatus.NOT_FOUND, 'Users Not Found'),
+  );
+  return users;
 };
 
+// get single user:
 const getSingleUser = async (id: string): Promise<IUser | null> => {
-  const result = await User.findById(id);
+  const result = await User.findById(id).orFail(
+    new ApiError(httpStatus.NOT_FOUND, 'User Not Found'),
+  );
   return result;
 };
-
+// update user:
 const updateUser = async (
   id: string,
   payload: Partial<IUser>,
-): Promise<IUser | null> => {
-  const isExist = await User.findOne({ _id: id });
-  if (!isExist) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
-  }
-  const { name, ...userData } = payload;
-  const updatedUserData = { ...userData };
+): Promise<IUser> => {
+  await User.exists({ _id: id }).orFail(
+    new ApiError(httpStatus.NOT_FOUND, 'User not found !'),
+  );
 
-  // dynamically handling
+  if (Object.keys(payload).length < 1) {
+    throw new Error('No data found to update');
+  }
+
+  const { name, ...UserData } = payload;
 
   if (name && Object.keys(name).length > 0) {
     Object.keys(name).forEach(key => {
-      const nameKey = `name.${key}` as keyof Partial<IUser>; // `name.fisrtName`
-      (updatedUserData as any)[nameKey] = name[key as keyof typeof name];
+      const nameKey = `name.${key}` as keyof Partial<IUser>;
+      (UserData as any)[nameKey] = name[key as keyof typeof name];
     });
   }
 
-  const result = await User.findOneAndUpdate({ _id: id }, updatedUserData, {
+  const result = await User.findOneAndUpdate({ _id: id }, UserData, {
     new: true,
-  });
+  }).orFail(
+    new ApiError(
+      httpStatus.NOT_FOUND,
+      'Failed to Update User or User not Found',
+    ),
+  );
 
   return result;
 };
-const deleteUser = async (id: string): Promise<IUser | null> => {
-  const result = await User.findByIdAndDelete(id);
+
+// delete user:
+const deleteUser = async (id: string): Promise<IUser> => {
+  const result = await User.findByIdAndDelete(id).orFail(
+    new ApiError(
+      httpStatus.NOT_FOUND,
+      'Failed to Delete User or User not Found',
+    ),
+  );
+  return result;
+};
+
+const getUserProfile = async (
+  userAuthData: JwtPayload,
+): Promise<IUser | IAdmin> => {
+  const { _id, role } = userAuthData;
+
+  // role ? admin | seller| buyer => model
+  const UserModel: any =
+    role === ENUM_USER_ROLE.ADMIN
+      ? Admin
+      : role === ENUM_USER_ROLE.BUYER || role === ENUM_USER_ROLE.SELLER
+        ? User
+        : null;
+
+  const userProfile = await UserModel.findById(_id, profileProjection)
+    .lean()
+    .orFail(
+      new ApiError(
+        httpStatus.NOT_FOUND,
+        'Failed to retrieve or User Not Found',
+      ),
+    );
+
+  return userProfile;
+};
+
+const updateUserProfile = async (
+  userAuthData: JwtPayload,
+  payload: Partial<IUser>,
+): Promise<IUser | IAdmin> => {
+  const { _id, role } = userAuthData;
+
+  // role ? admin | seller| buyer => model
+  const UserModel: any =
+    role === ENUM_USER_ROLE.ADMIN
+      ? Admin
+      : role === ENUM_USER_ROLE.BUYER || role === ENUM_USER_ROLE.SELLER
+        ? User
+        : null;
+
+  // role !== admin | buyer | seller
+  if (!UserModel) {
+    throw new ApiError(
+      httpStatus.NOT_FOUND,
+      'Role must be admin | buyer | seller',
+    );
+  }
+
+  // if user exists at database
+  await UserModel.exists({ _id }).orFail(
+    new ApiError(httpStatus.NOT_FOUND, 'User not found !'),
+  );
+
+  // if data not sent from client-side
+  if (Object.keys(payload).length < 1) {
+    throw new Error('No data found to update');
+  }
+
+  const { name, ...UserData } = payload;
+
+  if (name && Object.keys(name).length > 0) {
+    Object.keys(name).forEach(key => {
+      const nameKey = `name.${key}` as keyof Partial<IUser>;
+      (UserData as any)[nameKey] = name[key as keyof typeof name];
+    });
+  }
+
+  const result = await UserModel.findOneAndUpdate({ _id }, UserData, {
+    new: true,
+  })
+    .lean()
+    .select(profileProjection);
+
   return result;
 };
 
@@ -107,4 +151,6 @@ export const UserService = {
   getSingleUser,
   updateUser,
   deleteUser,
+  getUserProfile,
+  updateUserProfile,
 };
