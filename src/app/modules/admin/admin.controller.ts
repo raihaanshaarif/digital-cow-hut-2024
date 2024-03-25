@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable no-unused-vars */
 import { Request, RequestHandler, Response } from 'express';
 import catchAsync from '../../../shared/catchAsync';
 import httpStatus from 'http-status';
@@ -5,6 +7,8 @@ import sendResponse from '../../../shared/sendResponse';
 
 import { IAdmin } from './admin.interface';
 import { AdminService } from './admin.service';
+import { IRefreshTokenResponse } from '../auth/auth.interface';
+import config from '../../../config';
 
 const createAdmin: RequestHandler = catchAsync(
   async (req: Request, res: Response) => {
@@ -20,6 +24,27 @@ const createAdmin: RequestHandler = catchAsync(
     });
   },
 );
+
+const loginAdmin = catchAsync(async (req: Request, res: Response) => {
+  const { ...loginData } = req.body;
+  const result = await AdminService.loginAdmin(loginData);
+
+  const { refreshToken, ...rest } = result;
+
+  const cookieOptions = {
+    secure: config.env === 'production',
+    httpOnly: true,
+  };
+
+  res.cookie('refreshToken', refreshToken, cookieOptions);
+
+  sendResponse<IRefreshTokenResponse>(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Admin logged in successfully !',
+    data: rest,
+  });
+});
 
 // const getAllCow = catchAsync(async (req: Request, res: Response) => {
 //   const filters = pick(req.query, cowFilterableFields);
@@ -82,4 +107,5 @@ const deleteCow: RequestHandler = catchAsync(
 
 export const AdminController = {
   createAdmin,
+  loginAdmin,
 };

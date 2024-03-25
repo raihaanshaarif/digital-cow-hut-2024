@@ -1,11 +1,58 @@
-import { IAdmin } from './admin.interface';
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable no-unused-vars */
+import httpStatus from 'http-status';
+
+import { IAdmin, ILoginAdmin, ILoginAdminResponse } from './admin.interface';
 import { Admin } from './admin.model';
+import ApiError from '../../../errors/apiError';
+import { jwtHelpers } from '../../../helpers/jwtHelpers';
+import config from '../../../config';
+import { Secret } from 'jsonwebtoken';
 
-const createAdmin = async (adminData: IAdmin): Promise<IAdmin> => {
+const createAdmin = async (adminData: IAdmin) => {
   adminData.role = 'admin';
-  const result = await Admin.create(adminData);
-
+  const createdAdmin = await Admin.create(adminData);
+  const { password, ...result } = createdAdmin.toObject();
   return result;
+};
+
+const loginAdmin = async (
+  payload: ILoginAdmin,
+): Promise<ILoginAdminResponse> => {
+  const { phoneNumber: id, password } = payload;
+
+  console.log(payload);
+
+  // Check if the user exists
+  const isUserExist = await Admin.isAdminExist(id);
+  if (!isUserExist) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Admin not found');
+  }
+  //Check if the given and stored password mismatched
+  if (
+    isUserExist.password &&
+    !(await Admin.isPasswordMatched(password, isUserExist?.password))
+  ) {
+    throw new ApiError(httpStatus.UNAUTHORIZED, 'Password is incorrect');
+  }
+
+  // Create access token and refresh token
+  const { phoneNumber, role } = isUserExist;
+  const accessToken = jwtHelpers.createToken(
+    { phoneNumber, role },
+    config.jwt_secret as Secret,
+    config.jwt_expires_in as string,
+  );
+
+  const refreshToken = jwtHelpers.createToken(
+    { phoneNumber, role },
+    config.jwt_refresh_token_secret as Secret,
+    config.jwt_refresh_token_expires_in as string,
+  );
+  return {
+    accessToken,
+    refreshToken,
+  };
 };
 
 /* const getAllCows = async (
@@ -130,6 +177,7 @@ const deleteCow = async (id: string): Promise<ICow | null> => {
 
 export const AdminService = {
   createAdmin,
+  loginAdmin,
   // getSingleCow,
   // getAllCows,
   // updateCow,
